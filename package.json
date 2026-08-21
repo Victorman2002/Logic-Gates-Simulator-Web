@@ -1,0 +1,12 @@
+{
+  "name": "simulador-logico-tests",
+  "version": "1.0.0",
+  "description": "Pruebas unitarias para el simulador lógico",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0"
+  }
+}

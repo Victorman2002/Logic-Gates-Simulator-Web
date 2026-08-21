@@ -1,0 +1,436 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap');
+
+:root {
+    --bg-dark: #0b1120;
+    --bg-sidebar: #111827;
+    --bg-node: #1f2937;
+    --bg-node-header: #111827;
+    --text-main: #f3f4f6;
+    --text-muted: #9ca3af;
+    --accent-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+    --accent-purple: #8b5cf6;
+    --wire-color: #fbbf24;
+    --wire-hover: #f59e0b;
+    --border-color: #374151;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    height: 100vh;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    user-select: none;
+}
+
+/* Botón global de mostrar menú (oculto por defecto en PC si el menú está abierto) */
+#sidebar-toggle {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 50;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+#sidebar-toggle:hover {
+    background: var(--bg-node);
+    transform: translateY(-2px);
+}
+
+/* Menú Lateral */
+#sidebar {
+    width: 280px;
+    background: var(--bg-sidebar);
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    z-index: 40;
+    border-right: 1px solid var(--border-color);
+    flex-shrink: 0;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: nowrap;
+}
+
+#sidebar.collapsed {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-right: none;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.sidebar-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.close-sidebar-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.close-sidebar-btn:hover {
+    background: var(--border-color);
+    color: white;
+    transform: translateX(-2px);
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.spacer {
+    flex-grow: 1;
+    min-height: 20px;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    width: 100%;
+    margin: 5px 0;
+}
+
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Botones minimalistas */
+.btn-add,
+.btn-action {
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--bg-node);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-add .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    opacity: 0.8;
+}
+
+.input-btn .dot {
+    background-color: var(--accent-green);
+}
+
+.output-btn .dot {
+    background-color: var(--accent-red);
+}
+
+.btn-add:hover,
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.input-btn:hover {
+    border-color: var(--accent-green);
+}
+
+.output-btn:hover {
+    border-color: var(--accent-red);
+}
+
+.gate-btn:hover {
+    border-color: var(--accent-blue);
+}
+
+.advanced-btn {
+    justify-content: center;
+}
+
+.advanced-btn:hover {
+    border-color: var(--accent-purple);
+}
+
+.btn-action:hover {
+    border-color: var(--text-muted);
+}
+
+.btn-clear {
+    background: transparent;
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+.btn-clear:hover {
+    background-color: var(--accent-red);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Espacio de trabajo */
+#workspace-container {
+    flex-grow: 1;
+    position: relative;
+    overflow: hidden;
+    background-color: var(--bg-dark);
+    cursor: crosshair;
+}
+
+#workspace {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10000px;
+    height: 10000px;
+    background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+    background-size: 30px 30px;
+    transform-origin: 0 0;
+}
+
+#wires-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.wire {
+    stroke: var(--wire-color);
+    stroke-width: 3.5;
+    fill: none;
+    pointer-events: stroke;
+    cursor: pointer;
+    transition: stroke-width 0.1s;
+}
+
+.wire:hover {
+    stroke: var(--wire-hover);
+    stroke-width: 6;
+    filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.5));
+}
+
+#selection-box {
+    position: absolute;
+    border: 1px solid var(--accent-blue);
+    background: rgba(59, 130, 246, 0.15);
+    z-index: 100;
+    pointer-events: none;
+}
+
+/* Nodos */
+.node {
+    position: absolute;
+    background: var(--bg-node);
+    border-radius: 6px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    z-index: 2;
+    width: 120px;
+    transition: border-color 0.2s;
+}
+
+.node.selected {
+    border-color: var(--wire-color);
+    box-shadow: 0 0 0 1px var(--wire-color), 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+.node-header {
+    padding: 8px;
+    background: var(--bg-node-header);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.node-body {
+    padding: 15px 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 50px;
+}
+
+.port {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: absolute;
+    cursor: crosshair;
+    background: var(--text-main);
+    border: 2px solid var(--bg-node);
+    z-index: 3;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.port:hover {
+    transform: scale(1.5);
+}
+
+.port.in {
+    left: -6px;
+    background: var(--accent-blue);
+}
+
+.port.out {
+    right: -6px;
+    background: var(--text-muted);
+}
+
+.port.out:hover {
+    background: var(--text-main);
+}
+
+.val-btn {
+    background: var(--bg-node-header);
+    border: 1px solid var(--border-color);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.val-btn:hover {
+    background: var(--border-color);
+}
+
+.val-display {
+    font-size: 1.4rem;
+    font-weight: 800;
+    font-family: monospace;
+}
+
+.val-display.on {
+    color: var(--accent-green);
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
+.val-display.off {
+    color: var(--accent-red);
+}
+
+/* Menú Contextual */
+#context-menu {
+    position: absolute;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    z-index: 200;
+    padding: 5px 0;
+    min-width: 160px;
+    overflow: hidden;
+}
+
+.context-item {
+    padding: 10px 15px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+.context-item:hover {
+    background: var(--bg-node);
+}
+
+.context-item.danger {
+    color: var(--accent-red);
+}
+
+.context-item.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+@media (max-width: 768px) {
+    #sidebar-toggle {
+        display: block;
+    }
+
+    #sidebar {
+        position: absolute;
+        height: 100%;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+        transition: 0.3s;
+    }
+
+    #sidebar.open {
+        transform: translateX(0);
+    }
+
+    .close-sidebar-btn {
+        display: flex;
+    }
+}

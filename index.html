@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulador Lógico Pro</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <button id="sidebar-toggle" onclick="app.toggleSidebar()">☰ Menu</button>
+
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h2>Herramientas</h2>
+            <button class="close-sidebar-btn" onclick="app.toggleSidebar()">←</button>
+        </div>
+        <p class="subtitle">Componentes</p>
+
+        <div class="btn-group">
+            <button class="btn-add input-btn" onclick="app.addNode('INPUT')"><span class="dot"></span> Input</button>
+            <button class="btn-add output-btn" onclick="app.addNode('OUTPUT')"><span class="dot"></span> Output</button>
+        </div>
+        <hr>
+        <div class="btn-group">
+            <button class="btn-add gate-btn" onclick="app.addNode('AND')">AND</button>
+            <button class="btn-add gate-btn" onclick="app.addNode('OR')">OR</button>
+            <button class="btn-add gate-btn" onclick="app.addNode('XOR')">XOR</button>
+            <button class="btn-add gate-btn" onclick="app.addNode('NOT')">NOT</button>
+        </div>
+        <hr>
+        <button class="btn-add advanced-btn" onclick="app.addNode('FULL_ADDER')">Full Adder</button>
+
+        <div class="spacer"></div>
+        <hr>
+        <p class="subtitle">Archivo</p>
+        <div class="btn-group">
+            <button class="btn-action" onclick="app.saveProject()">Sava Proyect</button>
+            <button class="btn-action" onclick="document.getElementById('file-input').click()">Charge Proyect</button>
+            <input type="file" id="file-input" accept=".json" style="display: none;" onchange="app.loadProject(event)">
+        </div>
+        <button class="btn-clear" onclick="app.clearWorkspace()">Clean All</button>
+    </div>
+
+    <div id="workspace-container">
+        <div id="workspace">
+            <svg id="wires-layer"></svg>
+        </div>
+        <div id="selection-box" style="display: none;"></div>
+    </div>
+
+    <div id="context-menu" style="display: none;">
+        <div class="context-item" onclick="app.groupSelection()">Group Nodes</div>
+        <div class="context-item" onclick="app.duplicateSelection()">Duplicate Selection</div>
+        <div class="context-item danger" onclick="app.deleteSelection()">Eliminate Selected</div>
+    </div>
+
+    <script src="js/Config.js"></script>
+    <script src="js/Logic.js"></script>
+    <script src="js/LogicNode.js"></script>
+    <script src="js/Wire.js"></script>
+    <script src="js/SimulationEngine.js"></script>
+    <script src="js/SimulatorApp.js"></script>
+</body>
+
+</html>
