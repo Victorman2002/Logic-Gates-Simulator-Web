@@ -214,7 +214,13 @@ class SimulatorApp {
     toggleNodeInput(id) {
         const node = this.nodes[id];
         node.value = node.value === 0 ? 1 : 0;
-        document.getElementById(id).querySelector('.val-btn').innerText = node.value;
+
+        const el = document.getElementById(id);
+        if (el) {
+            el.querySelector('.val-btn').innerText = node.value;
+            // Esto hace que cambie de color dinámicamente al hacer clic
+            el.classList.toggle('active', node.value === 1);
+        }
         this.simulate();
     }
 
@@ -333,6 +339,9 @@ class SimulatorApp {
             this.nodes[newId] = newNode;
             this.dom.workspace.appendChild(newNode.element);
             newNode.updateDOMPosition();
+            if (newNode.customConfig && newNode.customConfig.isClock) {
+                this.startClock(newNode);
+            }
 
             node.selected = false;
             newNode.selected = true;
@@ -351,6 +360,79 @@ class SimulatorApp {
         this.updateSelectionVisuals();
         this.drawWires();
         this.simulate();
+    }
+
+    addClock() {
+        const id = 'node_' + this.nextNodeId++;
+        const rect = this.dom.container.getBoundingClientRect();
+        const x = (-this.camera.x + (rect.width / 2) - 60 + (Math.random() * 40 - 20)) / this.camera.zoom;
+        const y = (-this.camera.y + (rect.height / 2) - 40 + (Math.random() * 40 - 20)) / this.camera.zoom;
+
+        // 1. Lo creamos EXACTAMENTE igual que un INPUT normal para que tenga su pin de salida y estructura correcta
+        const node = new LogicNode(id, 'INPUT', x, y);
+        node.value = 0;
+        node.customConfig = { isClock: true }; // Guardamos la marca de reloj aquí para que sobreviva a duplicados/guardados
+
+        this.nodes[id] = node;
+        this.dom.workspace.appendChild(node.element);
+        node.updateDOMPosition();
+
+        // 2. Ajustamos su título visual en el DOM para que no ponga "INPUT" (o lo que ponga por defecto) y ponga "Reloj"
+        const el = document.getElementById(id);
+        if (el) {
+            // Buscamos el elemento del título del nodo (dependiendo de cómo lo llame tu LogicNode.js)
+            const titleEl = el.querySelector('.node-title') || el.querySelector('span');
+            if (titleEl) {
+                titleEl.innerText = "Clock";
+            }
+
+            // Opcional: si quieres que imite la estética visual de un output pero manteniendo el pin
+            el.classList.add('clock-node');
+        }
+
+        // 3. Arrancamos el temporizador
+        this.startClock(node);
+
+        if (window.innerWidth <= 768) {
+            document.getElementById('sidebar').classList.remove('open');
+        }
+    }
+
+    startClock(node) {
+    node.clockInterval = setInterval(() => {
+        if (!this.nodes[node.id]) {
+            clearInterval(node.clockInterval);
+            return;
+        }
+
+        node.value = node.value === 0 ? 1 : 0;
+
+        const el = document.getElementById(node.id);
+        if (el) {
+            const valBtn = el.querySelector('.val-btn');
+            if (valBtn) {
+                valBtn.innerText = node.value;
+            }
+            // Cambia entre rojo (0) y verde neón (1) automáticamente
+            el.classList.toggle('active', node.value === 1);
+        }
+
+        this.simulate();
+
+    }, 1000); 
+}
+
+    async loadJSON(ruta) {
+        try {
+            const respuesta = await fetch(ruta);
+            if (!respuesta.ok) {
+                throw new Error(`Error HTTP: ${respuesta.status}`);
+            }
+            return await respuesta.json();
+        } catch (error) {
+            console.error('Error al cargar el archivo JSON:', error);
+            return null;
+        }
     }
 
     saveProject() {
@@ -400,6 +482,9 @@ class SimulatorApp {
                     this.nodes[node.id] = node;
                     this.dom.workspace.appendChild(node.element);
                     node.updateDOMPosition();
+                    if (node.customConfig && node.customConfig.isClock) {
+                        this.startClock(node);
+                    }
 
                     const numId = parseInt(nd.id.split('_')[1]);
                     if (numId > maxNodeId) maxNodeId = numId;
@@ -427,80 +512,10 @@ class SimulatorApp {
         event.target.value = ''; // Resetear el input para poder cargar el mismo archivo dos veces seguidas si se quiere
     }
 
-    load8BitAdder() {
-        const data = {
-            "nodes": [
-                { "id": "node_1", "type": "INPUT", "x": 4783, "y": 4482.33, "value": 0 },
-                { "id": "node_2", "type": "INPUT", "x": 4786.33, "y": 4709, "value": 0 },
-                { "id": "node_3", "type": "INPUT", "x": 4787.16, "y": 4941.5, "value": 0 },
-                { "id": "node_4", "type": "INPUT", "x": 4789, "y": 5212.5, "value": 0 },
-                { "id": "node_5", "type": "INPUT", "x": 4785, "y": 5538.5, "value": 0 },
-                { "id": "node_6", "type": "INPUT", "x": 4787, "y": 5778.5, "value": 0 },
-                { "id": "node_7", "type": "INPUT", "x": 4784.75, "y": 6011.25, "value": 0 },
-                { "id": "node_8", "type": "INPUT", "x": 4783.5, "y": 6240, "value": 0 },
-                { "id": "node_9", "type": "INPUT", "x": 4784.66, "y": 4592.33, "value": 0 },
-                { "id": "node_10", "type": "INPUT", "x": 4785.5, "y": 4825.66, "value": 0 },
-                { "id": "node_11", "type": "INPUT", "x": 4788, "y": 5069, "value": 0 },
-                { "id": "node_12", "type": "INPUT", "x": 4789, "y": 5338.5, "value": 0 },
-                { "id": "node_13", "type": "INPUT", "x": 4783, "y": 5662.5, "value": 0 },
-                { "id": "node_14", "type": "INPUT", "x": 4781.97, "y": 5891.38, "value": 0 },
-                { "id": "node_15", "type": "INPUT", "x": 4787.25, "y": 6126.25, "value": 0 },
-                { "id": "node_16", "type": "INPUT", "x": 4783.5, "y": 6353.75, "value": 0 },
-                { "id": "node_17", "type": "FULL_ADDER", "x": 5092.66, "y": 4559.33 },
-                { "id": "node_18", "type": "FULL_ADDER", "x": 5262.66, "y": 4743.33 },
-                { "id": "node_19", "type": "FULL_ADDER", "x": 5422.66, "y": 4901.33 },
-                { "id": "node_20", "type": "FULL_ADDER", "x": 5584.75, "y": 5045.08 },
-                { "id": "node_21", "type": "FULL_ADDER", "x": 5732.38, "y": 5190.47 },
-                { "id": "node_22", "type": "FULL_ADDER", "x": 5879.52, "y": 5356.66 },
-                { "id": "node_23", "type": "FULL_ADDER", "x": 6045.71, "y": 5498.09 },
-                { "id": "node_24", "type": "FULL_ADDER", "x": 6226.66, "y": 5703.33 },
-                { "id": "node_25", "type": "OUTPUT", "x": 6435, "y": 4588.33 },
-                { "id": "node_26", "type": "OUTPUT", "x": 6435, "y": 4738.33 },
-                { "id": "node_27", "type": "OUTPUT", "x": 6435, "y": 4888.33 },
-                { "id": "node_28", "type": "OUTPUT", "x": 6435, "y": 5038.33 },
-                { "id": "node_29", "type": "OUTPUT", "x": 6435, "y": 5188.33 },
-                { "id": "node_30", "type": "OUTPUT", "x": 6435, "y": 5338.33 },
-                { "id": "node_31", "type": "OUTPUT", "x": 6435, "y": 5488.33 },
-                { "id": "node_32", "type": "OUTPUT", "x": 6435, "y": 5638.33 },
-                { "id": "node_33", "type": "INPUT", "x": 4930, "y": 4341.66, "value": 0 },
-                { "id": "node_34", "type": "OUTPUT", "x": 6435, "y": 5788.33 }
-            ],
-            "wires": [
-                { "id": "wire_1", "from": "node_33", "fromPort": 0, "to": "node_17", "toPort": 2 },
-                { "id": "wire_2", "from": "node_1", "fromPort": 0, "to": "node_17", "toPort": 0 },
-                { "id": "wire_3", "from": "node_9", "fromPort": 0, "to": "node_17", "toPort": 1 },
-                { "id": "wire_4", "from": "node_17", "fromPort": 0, "to": "node_25", "toPort": 0 },
-                { "id": "wire_5", "from": "node_2", "fromPort": 0, "to": "node_18", "toPort": 0 },
-                { "id": "wire_6", "from": "node_10", "fromPort": 0, "to": "node_18", "toPort": 1 },
-                { "id": "wire_7", "from": "node_17", "fromPort": 1, "to": "node_18", "toPort": 2 },
-                { "id": "wire_8", "from": "node_18", "fromPort": 0, "to": "node_26", "toPort": 0 },
-                { "id": "wire_9", "from": "node_3", "fromPort": 0, "to": "node_19", "toPort": 0 },
-                { "id": "wire_10", "from": "node_11", "fromPort": 0, "to": "node_19", "toPort": 1 },
-                { "id": "wire_11", "from": "node_18", "fromPort": 1, "to": "node_19", "toPort": 2 },
-                { "id": "wire_12", "from": "node_19", "fromPort": 0, "to": "node_27", "toPort": 0 },
-                { "id": "wire_13", "from": "node_4", "fromPort": 0, "to": "node_20", "toPort": 0 },
-                { "id": "wire_14", "from": "node_12", "fromPort": 0, "to": "node_20", "toPort": 1 },
-                { "id": "wire_15", "from": "node_19", "fromPort": 1, "to": "node_20", "toPort": 2 },
-                { "id": "wire_16", "from": "node_20", "fromPort": 0, "to": "node_28", "toPort": 0 },
-                { "id": "wire_17", "from": "node_5", "fromPort": 0, "to": "node_21", "toPort": 0 },
-                { "id": "wire_18", "from": "node_13", "fromPort": 0, "to": "node_21", "toPort": 1 },
-                { "id": "wire_19", "from": "node_20", "fromPort": 1, "to": "node_21", "toPort": 2 },
-                { "id": "wire_20", "from": "node_21", "fromPort": 0, "to": "node_29", "toPort": 0 },
-                { "id": "wire_21", "from": "node_6", "fromPort": 0, "to": "node_22", "toPort": 0 },
-                { "id": "wire_22", "from": "node_14", "fromPort": 0, "to": "node_22", "toPort": 1 },
-                { "id": "wire_23", "from": "node_21", "fromPort": 1, "to": "node_22", "toPort": 2 },
-                { "id": "wire_24", "from": "node_22", "fromPort": 0, "to": "node_30", "toPort": 0 },
-                { "id": "wire_25", "from": "node_7", "fromPort": 0, "to": "node_23", "toPort": 0 },
-                { "id": "wire_26", "from": "node_15", "fromPort": 0, "to": "node_23", "toPort": 1 },
-                { "id": "wire_27", "from": "node_22", "fromPort": 1, "to": "node_23", "toPort": 2 },
-                { "id": "wire_28", "from": "node_23", "fromPort": 0, "to": "node_31", "toPort": 0 },
-                { "id": "wire_29", "from": "node_8", "fromPort": 0, "to": "node_24", "toPort": 0 },
-                { "id": "wire_30", "from": "node_16", "fromPort": 0, "to": "node_24", "toPort": 1 },
-                { "id": "wire_31", "from": "node_23", "fromPort": 1, "to": "node_24", "toPort": 2 },
-                { "id": "wire_32", "from": "node_24", "fromPort": 0, "to": "node_32", "toPort": 0 },
-                { "id": "wire_33", "from": "node_24", "fromPort": 1, "to": "node_34", "toPort": 0 }
-            ]
-        };
+    async load8BitAdder() {
+        const data = await this.loadJSON('js/circuits/8-bit-adder.json');
+
+        if (!data) return;
 
         this.dom.contextMenu.style.display = 'none';
         const idMapping = {}; // Mapa para evitar que los IDs colisionen con nodos existentes
